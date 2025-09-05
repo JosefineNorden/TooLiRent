@@ -1,6 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using TooLiRent.Data;
+using TooLiRent.Services.Mapping;
 
 namespace TooLiRent
 {
@@ -12,13 +14,16 @@ namespace TooLiRent
 
             // Add services to the container.
 
+            builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<TooLiRentDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+                x => x.MigrationsAssembly("TooLiRent.Infrastructure")));
 
             var app = builder.Build();
 
@@ -37,6 +42,9 @@ namespace TooLiRent
             app.MapControllers();
 
             app.Run();
+
+
+            // vad göra härnäst: Lägga till ToolController för API:et!! 
         }
     }
 }
