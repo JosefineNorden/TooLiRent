@@ -1,8 +1,12 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TooLiRent.Core.Interfaces;
 using TooLiRent.Data;
+using TooLiRent.Infrastructure.Repositories;
+using TooLiRent.Services.Interfaces;
 using TooLiRent.Services.Mapping;
+using TooLiRent.Services.Services;
 
 namespace TooLiRent
 {
@@ -17,6 +21,10 @@ namespace TooLiRent
             builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
             builder.Services.AddControllers();
+            builder.Services.AddScoped<IToolService, ToolService>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IToolRepository, ToolRepository>();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

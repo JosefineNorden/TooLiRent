@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TooLiRent.Core\TooLiRent.Core.csproj" />
     <ProjectReference Include="..\TooLiRent.Infrastructure\TooLiRent.Infrastructure.csproj" />
     <ProjectReference Include="..\TooLiRent.Services\TooLiRent.Services.csproj" />
