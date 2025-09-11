@@ -24,9 +24,16 @@ namespace TooLiRent
             builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
             builder.Services.AddControllers();
+
+            //Tools
             builder.Services.AddScoped<IToolService, ToolService>();
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IToolRepository, ToolRepository>();
+
+            //Customer
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -39,6 +46,8 @@ namespace TooLiRent
             // FluentValidation – registrera manuellt
             builder.Services.AddScoped<IValidator<ToolCreateDto>, ToolCreateDtoValidator>();
             builder.Services.AddScoped<IValidator<ToolUpdateDto>, ToolUpdateDtoValidator>();
+            builder.Services.AddScoped<IValidator<CustomerCreateDto>, CustomerCreateDtoValidator>();
+            builder.Services.AddScoped<IValidator<CustomerUpdateDto>, CustomerUpdateDtoValidator>();
 
             var app = builder.Build();
 
@@ -59,7 +68,7 @@ namespace TooLiRent
             app.Run();
 
 
-            // vad göra härnäst: Lägga till ToolController för API:et!! 
+            // vad göra härnäst: Fråga Petter om hjälp med navigeringen mellan olika modeller. ChatGPTSUGERJustNU!
         }
     }
 }
