@@ -1,12 +1,15 @@
 
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TooLiRent.Core.Interfaces;
 using TooLiRent.Data;
 using TooLiRent.Infrastructure.Repositories;
+using TooLiRent.Services.DTOs;
 using TooLiRent.Services.Interfaces;
 using TooLiRent.Services.Mapping;
 using TooLiRent.Services.Services;
+using TooLiRent.Services.Validation;
 
 namespace TooLiRent
 {
@@ -32,6 +35,10 @@ namespace TooLiRent
             builder.Services.AddDbContext<TooLiRentDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("TooLiRent.Infrastructure")));
+
+            // FluentValidation – registrera manuellt
+            builder.Services.AddScoped<IValidator<ToolCreateDto>, ToolCreateDtoValidator>();
+            builder.Services.AddScoped<IValidator<ToolUpdateDto>, ToolUpdateDtoValidator>();
 
             var app = builder.Build();
 
