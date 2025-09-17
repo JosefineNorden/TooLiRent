@@ -33,6 +33,11 @@ namespace TooLiRent
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
+            //Rental
+            builder.Services.AddScoped<IRentalService, RentalService>();
+            builder.Services.AddScoped<IRentalRepository, RentalRepository>();
+
+            //Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -48,6 +53,8 @@ namespace TooLiRent
             builder.Services.AddScoped<IValidator<ToolUpdateDto>, ToolUpdateDtoValidator>();
             builder.Services.AddScoped<IValidator<CustomerCreateDto>, CustomerCreateDtoValidator>();
             builder.Services.AddScoped<IValidator<CustomerUpdateDto>, CustomerUpdateDtoValidator>();
+            builder.Services.AddScoped<IValidator<RentalCreateDto>, RentalCreateDtoValidator>();
+            builder.Services.AddScoped<IValidator<RentalUpdateDto>, RentalUpdateDtoValidator>();
 
             var app = builder.Build();
 
@@ -60,6 +67,28 @@ namespace TooLiRent
 
             app.UseHttpsRedirection();
 
+            app.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (FluentValidation.ValidationException ex)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    context.Response.ContentType = "application/json";
+
+                    var errors = ex.Errors.Select(e => new
+                    {
+                        property = e.PropertyName,
+                        error = e.ErrorMessage
+                    });
+
+                    await context.Response.WriteAsJsonAsync(errors);
+                }
+            });
+
+
             app.UseAuthorization();
 
 
@@ -68,7 +97,7 @@ namespace TooLiRent
             app.Run();
 
 
-            // vad göra härnäst: Fråga Petter om hjälp med navigeringen mellan olika modeller. ChatGPTSUGERJustNU!
+            // vad göra härnäst: 
         }
     }
 }
