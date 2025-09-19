@@ -6,6 +6,7 @@ using TooLiRent.Services.Interfaces;
 
 namespace TooLiRent.WebAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ToolController : ControllerBase
@@ -21,7 +22,7 @@ namespace TooLiRent.WebAPI.Controllers
         /// <summary>
         /// Get all tools
         /// </summary>
-
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ToolDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<ToolDto>>> GetAll()
@@ -33,6 +34,7 @@ namespace TooLiRent.WebAPI.Controllers
         /// <summary>
         /// Get a specific tool by ID
         /// </summary>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ToolDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -50,6 +52,8 @@ namespace TooLiRent.WebAPI.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ToolDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ToolDto>> CreateTool(ToolCreateDto dto)
@@ -66,6 +70,8 @@ namespace TooLiRent.WebAPI.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateTool(int id, ToolUpdateDto dto)
@@ -82,6 +88,8 @@ namespace TooLiRent.WebAPI.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteTool(int id)
@@ -96,6 +104,7 @@ namespace TooLiRent.WebAPI.Controllers
         /// <summary>
         /// Get all available tools (Stock > 0)
         /// </summary>
+        [AllowAnonymous]
         [HttpGet("available")]
         [ProducesResponseType(typeof(IEnumerable<ToolDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<ToolDto>>> GetAvailable()
@@ -107,6 +116,7 @@ namespace TooLiRent.WebAPI.Controllers
         /// <summary>
         /// Get filtered tools by category, status, and availability
         /// </summary>
+        [AllowAnonymous]
         [HttpGet("filter")]
         [ProducesResponseType(typeof(IEnumerable<ToolDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<ToolDto>>> FilterTools(
