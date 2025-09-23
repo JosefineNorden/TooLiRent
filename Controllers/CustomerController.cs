@@ -86,17 +86,22 @@ namespace TooLiRent.WebAPI.Controllers
         /// Delete a customer
         /// </summary>
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _customerService.DeleteAsync(id);
-            if (!success)
-                return NotFound($"Customer with ID {id} not found.");
-
-            return NoContent();
+            try
+            {
+                var ok = await _customerService.DeleteAsync(id);
+                if (!ok) return NotFound(new { error = "Kunden hittades inte" });
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                
+                return Conflict(new { error = ex.Message });
+            }
         }
     }
 }

@@ -30,16 +30,56 @@ namespace TooLiRent.WebAPI.Controllers
             return Ok(new { token });
         }
 
-        /// <summary>Registrera ny Member-användare</summary>
-        [AllowAnonymous]
-        [HttpPost("register")]
+        [Authorize(Roles = "Admin")] // Se alla Admins
+        [HttpGet("users/admins")]
+        public async Task<IActionResult> GetAdmins()
+        {
+            var admins = await _auth.GetAdminsAsync();
+            return Ok(admins);
+        }
+
+        [Authorize(Roles = "Admin")] // Se alla Members
+        [HttpGet("users/members")]
+        public async Task<IActionResult> GetMembers()
+        {
+            var members = await _auth.GetMembersAsync();
+            return Ok(members);
+        }
+
+        /// <summary>Registrera ny Admin-användare</summary>
+        [Authorize(Roles = "Admin")] 
+        [HttpPost("register-admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterDto dto)
+        {
+            var (ok, errors) = await _auth.RegisterAdminAsync(dto);
+            if (!ok) return BadRequest(new { errors });
+            return StatusCode(StatusCodes.Status201Created, "Admin created successfully");
+        }
+
+        /// <summary>Registrera ny Member-användare</summary>
+        [AllowAnonymous]
+        [HttpPost("register-member")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RegisterMember([FromBody] RegisterDto dto)
         {
             var (ok, errors) = await _auth.RegisterMemberAsync(dto);
             if (!ok) return BadRequest(new { errors });
-            return StatusCode(StatusCodes.Status201Created);
+            return StatusCode(StatusCodes.Status201Created, "Member created successfully");
+        }
+
+        /// <summary>Ta bort en användare (endast Admin)</summary>
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("delete/{email}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteUser(string email)
+        {
+            var (ok, errors) = await _auth.DeleteUserAsync(email);
+            if (!ok) return BadRequest(new { errors });
+            return Ok($"User {email} deleted successfully");
         }
 
         /// <summary>Info om inloggad användare</summary>
