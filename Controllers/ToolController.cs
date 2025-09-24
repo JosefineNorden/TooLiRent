@@ -128,6 +128,16 @@ namespace TooLiRent.WebAPI.Controllers
             return Ok(filtered);
         }
 
+        /// <summary>Lista alla kategorier (för filtrering)</summary>
+        [AllowAnonymous]
+        [HttpGet("categories")]
+        [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCategories()
+        {
+            var items = await _toolService.GetCategoriesAsync(); 
+            return Ok(items);
+        }
+
 
     }
 }

@@ -19,7 +19,7 @@ namespace TooLiRent.WebAPI.Controllers
             _rentalService = rentalService;
         }
 
-        // Hämtar vem som ringer (email + adminflagga)
+       
         private (string? email, bool isAdmin) Caller()
         {
             var email = User.FindFirst(ClaimTypes.Email)?.Value
@@ -112,28 +112,58 @@ namespace TooLiRent.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Mark a rental as returned (ägarkoll i service)
-        /// </summary>
-        [Authorize(Roles = "Member,Admin")]
-        [HttpPost("{id}/return")]
-        [ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ReturnRental(int id)
-        {
-            var (email, isAdmin) = Caller();
-            try
-            {
-                var returned = await _rentalService.ReturnAsync(id, email, isAdmin);
-                if (returned == null)
-                    return NotFound($"Rental with ID {id} not found.");
+        ///// <summary>
+        ///// Mark a rental as returned (ägarkoll i service)
+        ///// </summary>
+        //[Authorize(Roles = "Member,Admin")]
+        //[HttpPost("{id}/return")]
+        //[ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //public async Task<IActionResult> ReturnRental(int id)
+        //{
+        //    var (email, isAdmin) = Caller();
+        //    try
+        //    {
+        //        var returned = await _rentalService.ReturnAsync(id, email, isAdmin);
+        //        if (returned == null)
+        //            return NotFound($"Rental with ID {id} not found.");
 
-                return Ok(returned);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
+        //        return Ok(returned);
+        //    }
+        //    catch (UnauthorizedAccessException)
+        //    {
+        //        return Forbid();
+        //    }
+        //}
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id:int}/pickup")]
+        [ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Pickup(int id)
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirst("email")?.Value;
+            var isAdmin = User.IsInRole("Admin");
+
+            var dto = await _rentalService.PickUpAsync(id, email, isAdmin);
+            if (dto is null) return NotFound();
+            return Ok(dto);
+        }
+
+        [Authorize]
+        [HttpPatch("{id:int}/return")]
+        [ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Return(int id)
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirst("email")?.Value;
+            var isAdmin = User.IsInRole("Admin");
+
+            var dto = await _rentalService.ReturnAsync(id, email, isAdmin);
+            if (dto is null) return NotFound();
+            return Ok(dto);
         }
 
         /// <summary>
