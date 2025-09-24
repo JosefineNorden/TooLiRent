@@ -43,6 +43,9 @@ namespace TooLiRent
             builder.Services.AddScoped<IRentalService, RentalService>();
             builder.Services.AddScoped<IRentalRepository, RentalRepository>();
 
+            //Admin Summary
+            builder.Services.AddScoped<IAdminSummaryService, AdminSummaryService>();
+
             //Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -144,7 +147,7 @@ namespace TooLiRent
                     var roleMgr = sp.GetRequiredService<RoleManager<IdentityRole>>();
                     var userMgr = sp.GetRequiredService<UserManager<IdentityUser>>();
 
-                    // (valfritt skyddsnät) säkerställ att rollerna finns – din migration ska redan ha skapat dem
+                   
                     foreach (var role in new[] { "Admin", "Member" })
                         if (!await roleMgr.RoleExistsAsync(role))
                             await roleMgr.CreateAsync(new IdentityRole(role));
