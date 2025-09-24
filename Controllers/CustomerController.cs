@@ -82,6 +82,29 @@ namespace TooLiRent.WebAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>Aktivera kund</summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id:int}/activate")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var ok = await _customerService.SetActiveAsync(id, true);
+            return ok ? NoContent() : NotFound();
+        }
+
+        /// <summary>Inaktivera kund</summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id:int}/deactivate")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Deactivate(int id)
+        {
+            var ok = await _customerService.SetActiveAsync(id, false);
+            return ok ? NoContent() : NotFound();
+        }
+
+
         /// <summary>
         /// Delete a customer
         /// </summary>
