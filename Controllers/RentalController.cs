@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -68,16 +69,30 @@ namespace TooLiRent.WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(RentalDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<RentalDto>> Create(RentalCreateDto dto)
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<RentalDto>> Create([FromBody] RentalCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var (email, isAdmin) = Caller();
+
             try
             {
                 var created = await _rentalService.CreateAsync(dto, email, isAdmin);
                 return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            }
+            catch (ValidationException ex)
+            {
+                // FluentValidation 
+                var errors = ex.Errors.Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { errors });
+            }
+            catch (InvalidOperationException ex)
+            {
+                
+                return Conflict(new { error = ex.Message });
             }
             catch (UnauthorizedAccessException)
             {
@@ -112,58 +127,63 @@ namespace TooLiRent.WebAPI.Controllers
             }
         }
 
-        ///// <summary>
-        ///// Mark a rental as returned (ägarkoll i service)
-        ///// </summary>
-        //[Authorize(Roles = "Member,Admin")]
-        //[HttpPost("{id}/return")]
-        //[ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> ReturnRental(int id)
-        //{
-        //    var (email, isAdmin) = Caller();
-        //    try
-        //    {
-        //        var returned = await _rentalService.ReturnAsync(id, email, isAdmin);
-        //        if (returned == null)
-        //            return NotFound($"Rental with ID {id} not found.");
-
-        //        return Ok(returned);
-        //    }
-        //    catch (UnauthorizedAccessException)
-        //    {
-        //        return Forbid();
-        //    }
-        //}
 
         [Authorize(Roles = "Admin")]
         [HttpPatch("{id:int}/pickup")]
-        [ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(object), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Pickup(int id)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirst("email")?.Value;
             var isAdmin = User.IsInRole("Admin");
 
-            var dto = await _rentalService.PickUpAsync(id, email, isAdmin);
-            if (dto is null) return NotFound();
-            return Ok(dto);
+            try
+            {
+                var dto = await _rentalService.PickUpAsync(id, email, isAdmin);
+                if (dto is null) return NotFound();
+                return Ok(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Member,Admin")]
         [HttpPatch("{id:int}/return")]
-        [ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(object), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Return(int id)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirst("email")?.Value;
             var isAdmin = User.IsInRole("Admin");
 
-            var dto = await _rentalService.ReturnAsync(id, email, isAdmin);
-            if (dto is null) return NotFound();
-            return Ok(dto);
+            try
+            {
+                var dto = await _rentalService.ReturnAsync(id, email, isAdmin);
+                if (dto is null) return NotFound();
+                return Ok(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("my")]
+        [ProducesResponseType(typeof(IEnumerable<RentalDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<RentalDto>>> MyRentals()
+        {
+            var (email, _) = Caller();
+            if (string.IsNullOrWhiteSpace(email)) return Forbid();
+            var items = await _rentalService.GetMyAsync(email);
+            return Ok(items);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("overdue")]
+        [ProducesResponseType(typeof(IEnumerable<RentalDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<RentalDto>>> Overdue()
+        {
+            var items = await _rentalService.GetOverdueAsync();
+            return Ok(items);
         }
 
         /// <summary>
