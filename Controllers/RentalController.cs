@@ -186,30 +186,29 @@ namespace TooLiRent.WebAPI.Controllers
             return Ok(items);
         }
 
-        
-        [Authorize]
+
+        [Authorize(Roles = "Member,Admin")]
         [HttpDelete("{id:int}/cancel")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> Cancel(int id)
         {
             var (email, isAdmin) = Caller();
             try
             {
                 var ok = await _rentalService.CancelAsync(id, email, isAdmin);
-                if (!ok) return NotFound();
-                return NoContent();
+                if (!ok) return NotFound(); // Bokning hittades inte
+                return NoContent();         // Avbokad
             }
             catch (UnauthorizedAccessException)
             {
-                return Forbid();
+                return Forbid();            // Inte ägare
             }
             catch (InvalidOperationException ex)
             {
-                
-                return Conflict(new { error = ex.Message });
+                return BadRequest(new { error = ex.Message }); // T.ex. "kan inte avbokas efter start"
             }
         }
 
