@@ -186,6 +186,34 @@ namespace TooLiRent.WebAPI.Controllers
             return Ok(items);
         }
 
+        
+        [Authorize]
+        [HttpDelete("{id:int}/cancel")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var (email, isAdmin) = Caller();
+            try
+            {
+                var ok = await _rentalService.CancelAsync(id, email, isAdmin);
+                if (!ok) return NotFound();
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+
         /// <summary>
         /// Delete a rental (Admin only)
         /// </summary>
