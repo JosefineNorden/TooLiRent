@@ -70,6 +70,29 @@ namespace TooLiRent.WebAPI.Controllers
             return StatusCode(StatusCodes.Status201Created, "Member created successfully");
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("deactivate/{email}")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeactivateUser(string email)
+        {
+            var (ok, errors) = await _auth.DeactivateUserAsync(email);
+            if (!ok) return BadRequest(new { errors });
+            return Ok(new { message = $"User '{email}' deactivated." });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("activate/{email}")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ActivateUser(string email)
+        {
+            var (ok, errors) = await _auth.ActivateUserAsync(email);
+            if (!ok) return BadRequest(new { errors });
+            return Ok(new { message = $"User '{email}' activated." });
+        }
+
+
         /// <summary>Ta bort en användare (endast Admin)</summary>
         [Authorize(Roles = "Admin")]
         [HttpDelete("delete/{email}")]
