@@ -25,9 +25,31 @@ namespace TooLiRent.WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var token = await _auth.LoginAsync(dto);
-            if (token is null) return Unauthorized("Ogiltig e-post eller lösenord.");
-            return Ok(new { token });
+            var result = await _auth.LoginAsync(dto);
+            if (result is null) return Unauthorized("Ogiltig e-post eller lösenord.");
+
+            return Ok(new LoginResponseDto
+            {
+                AccessToken = result.Value.AccessToken,
+                RefreshToken = result.Value.RefreshToken
+            });
+        }
+
+        /// <summary>Byt RefreshToken mot ett nytt AccessToken</summary>
+        [AllowAnonymous]
+        [HttpPost("refresh")]
+        [ProducesResponseType(typeof(RefreshResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
+        {
+            var result = await _auth.RefreshAsync(dto.RefreshToken);
+            if (result is null) return Unauthorized("Ogiltigt eller utgånget refresh token.");
+
+            return Ok(new RefreshResponseDto
+            {
+                AccessToken = result.Value.AccessToken,
+                RefreshToken = result.Value.RefreshToken
+            });
         }
 
         [Authorize(Roles = "Admin")] // Se alla Admins
