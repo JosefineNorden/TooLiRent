@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TooLiRent.WebAPI", "TooLiRe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TooLiRent.Infrastructure", "..\TooLiRent.Infrastructure\TooLiRent.Infrastructure.csproj", "{C8986A9A-8768-4D31-A8A2-12E3F68926BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TooLiRent.Core", "..\TooLiRent.Core\TooLiRent.Core.csproj", "{D5A5FC2C-606B-4FF0-B68F-9B1BE1BEE97C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TooLiRent.Core", "TooLiRent.Core\TooLiRent.Core.csproj", "{D5A5FC2C-606B-4FF0-B68F-9B1BE1BEE97C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TooLiRent.Services", "..\TooLiRent.Services\TooLiRent.Services.csproj", "{0EFA8B90-C425-49FE-AAD1-25BE961D379E}"
 EndProject
