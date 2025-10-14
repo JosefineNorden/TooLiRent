@@ -134,7 +134,7 @@ namespace TooLiRent
                 });
             });
 
-
+            // Testar en grej
 
             // FluentValidation – registrera manuellt
             builder.Services.AddScoped<IValidator<ToolCreateDto>, ToolCreateDtoValidator>();
